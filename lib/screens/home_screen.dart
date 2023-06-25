@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '/services/lottie_animation_start.dart';
 import '/components/add_contact_button.dart';
+import '/screens/create_contact_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,11 +16,11 @@ class HomeScreen extends StatelessWidget {
         title: const Text('My Contacts'),
         centerTitle: true,
       ),
-      body: _buildBody(contacts),
+      body: _buildBody(contacts, context),
     );
   }
 
-  Widget _buildBody(List<String> contacts) {
+  Widget _buildBody(List<String> contacts, BuildContext context) {
     if (contacts.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -31,17 +33,46 @@ class HomeScreen extends StatelessWidget {
               ContactButton(
                 key: UniqueKey(),
                 buttonText: 'Add Contact',
-                onPressed: () {
-                  // Логіка для додавання контакту
+                onPressed: () async {
+                  // Перевірка дозволу на доступ до контактів
+                  PermissionStatus status = await Permission.contacts.status;
+                  if (status.isDenied) {
+                    print(status.isDenied);
+                    // Дозвіл на доступ до контактів не надано, показати повідомлення
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Access Denied'),
+                        content: const Text('Please grant permission to access contacts.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              // Відкрити налаштування дозволу
+                              openAppSettings();
+                            },
+                            child: const Text('Open Settings'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (status.isGranted) {
+                    //  додавання контакту
+                    _addContact();
+                  }
                 },
               ),
               const SizedBox(width: 16),
               ContactButton(
                 key: UniqueKey(),
                 buttonText: 'Create Contact',
-                onPressed: () {
-                  // Логіка для створення контакту
-                },
+                onPressed: () => _navigateToCreateContactScreen(context),
               ),
             ],
           ),
@@ -59,5 +90,16 @@ class HomeScreen extends StatelessWidget {
         },
       );
     }
+  }
+
+  Future<void> _addContact() async {
+    // TODO: Додайте код для додавання контакту
+  }
+
+  void _navigateToCreateContactScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateContactScreen()),
+    );
   }
 }
