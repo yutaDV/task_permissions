@@ -17,6 +17,8 @@ class PhotoDialog extends StatefulWidget {
 }
 
 class _PhotoDialogState extends State<PhotoDialog> {
+  bool isGalleryPermissionDenied = false;
+
   @override
   void initState() {
     super.initState();
@@ -26,6 +28,23 @@ class _PhotoDialogState extends State<PhotoDialog> {
   void _requestGalleryPermission() async {
     PermissionStatus status = await Permission.photos.request();
     if (status.isDenied) {
+      setState(() {
+        isGalleryPermissionDenied = true;
+      });
+    }
+  }
+
+  void _openAppSettings() async {
+    bool isOpened = await openAppSettings();
+    if (isOpened) {
+      setState(() {
+        isGalleryPermissionDenied = false;
+      });
+    }
+  }
+
+  void _onGallerySelected() {
+    if (isGalleryPermissionDenied) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -40,13 +59,17 @@ class _PhotoDialogState extends State<PhotoDialog> {
             ),
             TextButton(
               onPressed: () {
-                openAppSettings();
+                _openAppSettings();
               },
               child: const Text('App Settings'),
             ),
           ],
         ),
       );
+    } else {
+      if (widget.onGallerySelected != null) {
+        widget.onGallerySelected!();
+      }
     }
   }
 
@@ -60,7 +83,7 @@ class _PhotoDialogState extends State<PhotoDialog> {
           ListTile(
             leading: const Icon(Icons.photo_library),
             title: const Text('Choose from Gallery'),
-            onTap: widget.onGallerySelected,
+            onTap: _onGallerySelected,
           ),
           ListTile(
             leading: const Icon(Icons.photo_camera),

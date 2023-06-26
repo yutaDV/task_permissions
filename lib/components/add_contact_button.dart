@@ -1,25 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '/screens/create_contact_screen.dart';
 
-class ContactButton extends StatelessWidget {
+class AddContactButton extends StatelessWidget {
   final VoidCallback onPressed;
-  final String buttonText;
 
-  const ContactButton({Key? key, required this.onPressed, required this.buttonText})
-      : super(key: key);
+  const AddContactButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        primary: Colors.green,
-        onPrimary: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 32,
-        ),
+    return FloatingActionButton(
+      onPressed: () async {
+        PermissionStatus status = await Permission.contacts.status;
+        if (status.isDenied) {
+          _showAccessDeniedDialog(context);
+        } else if (status.isGranted) {
+          onPressed();
+        }
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  void _showAccessDeniedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Access Denied'),
+        content: const Text('Please grant permission to access contacts.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel'),
+          ),
+        ],
       ),
-      child: Text(buttonText),
     );
   }
 }

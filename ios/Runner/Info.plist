@@ -49,5 +49,7 @@
 	<true/>
 	<key>NSContactsUsageDescription</key>
     <string>Provide a reason why you need access to contacts</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Access to the photo library is required to upload photos.</string>
 </dict>
 </plist>

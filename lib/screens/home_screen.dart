@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '/services/lottie_animation_start.dart';
 import '/components/add_contact_button.dart';
 import '/screens/create_contact_screen.dart';
 import '/models/contact.dart';
 import 'dart:io';
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -60,38 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: FloatingActionButton(
-            onPressed: () async {
-              PermissionStatus status = await Permission.contacts.status;
-              if (status.isDenied) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Access Denied'),
-                    content: const Text(
-                        'Please grant permission to access contacts.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          openAppSettings();
-                        },
-                        child: const Text('Open Settings'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                    ],
-                  ),
-                );
-              } else if (status.isGranted) {
-                _navigateToCreateContactScreen(context);
-              }
-            },
-            child: const Icon(Icons.add),
+          child: AddContactButton(
+            onPressed: _onAddContactPressed,
           ),
         ),
         Padding(
@@ -103,6 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
     );
+  }
+
+  void _onAddContactPressed() {
+    _navigateToCreateContactScreen(context);
   }
 
   void _navigateToCreateContactScreen(BuildContext context) async {

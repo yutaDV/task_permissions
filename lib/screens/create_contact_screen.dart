@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '/widgets/photo_dialog.dart';
+import '/components/photo_dialog.dart';
 import '/services/contact_service.dart';
 
 class CreateContactScreen extends StatefulWidget {
