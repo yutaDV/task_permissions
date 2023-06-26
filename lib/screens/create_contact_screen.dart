@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
 import '/widgets/photo_dialog.dart';
+import '/services/contact_service.dart';
 
 class CreateContactScreen extends StatefulWidget {
   const CreateContactScreen({Key? key}) : super(key: key);
@@ -14,6 +14,18 @@ class CreateContactScreen extends StatefulWidget {
 class _CreateContactScreenState extends State<CreateContactScreen> {
   ImagePicker _imagePicker = ImagePicker();
   PickedFile? _pickedImage;
+
+  TextEditingController _lastNameController = TextEditingController();
+  TextEditingController _firstNameController = TextEditingController();
+  TextEditingController _phoneNumberController = TextEditingController();
+
+  @override
+  void dispose() {
+    _lastNameController.dispose();
+    _firstNameController.dispose();
+    _phoneNumberController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,27 +43,28 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
               _buildAvatar(),
               const SizedBox(height: 16),
               TextField(
+                controller: _lastNameController,
                 decoration: InputDecoration(
                   labelText: 'Last name',
                 ),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _firstNameController,
                 decoration: InputDecoration(
                   labelText: 'First name',
                 ),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _phoneNumberController,
                 decoration: InputDecoration(
                   labelText: 'Phone number',
                 ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
-                  // Логіка для збереження контакту
-                },
+                onPressed: _saveContact,
                 child: const Text('Save'),
               ),
               const SizedBox(height: 16),
@@ -67,7 +80,7 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
       onTap: _showImageSourceDialog,
       child: CircleAvatar(
         radius: 80,
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.white70,
         child: _pickedImage != null
             ? ClipRRect(
           borderRadius: BorderRadius.circular(80),
@@ -89,16 +102,17 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
   void _showImageSourceDialog() {
     showDialog(
       context: context,
-      builder: (context) => PhotoDialog(
-        onGallerySelected: () {
-          _getImage(ImageSource.gallery);
-          Navigator.pop(context);
-        },
-        onCameraSelected: () {
-          _getImage(ImageSource.camera);
-          Navigator.pop(context);
-        },
-      ),
+      builder: (context) =>
+          PhotoDialog(
+            onGallerySelected: () {
+              _getImage(ImageSource.gallery);
+              Navigator.pop(context);
+            },
+            onCameraSelected: () {
+              _getImage(ImageSource.camera);
+              Navigator.pop(context);
+            },
+          ),
     );
   }
 
@@ -110,4 +124,21 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
       });
     }
   }
+
+  void _saveContact() {
+    final lastName = _lastNameController.text;
+    final firstName = _firstNameController.text;
+    final phoneNumber = _phoneNumberController.text;
+    final avatarPath = _pickedImage?.path ?? '';
+
+    ContactService.saveContact(
+      lastName,
+      firstName,
+      phoneNumber,
+      avatarPath,
+      context,
+    );
+
+  }
 }
+

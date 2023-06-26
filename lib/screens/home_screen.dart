@@ -3,79 +3,38 @@ import 'package:permission_handler/permission_handler.dart';
 import '/services/lottie_animation_start.dart';
 import '/components/add_contact_button.dart';
 import '/screens/create_contact_screen.dart';
+import '/models/contact.dart';
+import 'dart:io';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final List<String> contacts = []; // порожній список контактів
+  _HomeScreenState createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  List<Contact> contacts = ContactRepository.getContacts();
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Contacts'),
         centerTitle: true,
       ),
-      body: _buildBody(contacts, context),
+      body: _buildBody(),
+      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
-  Widget _buildBody(List<String> contacts, BuildContext context) {
+  Widget _buildBody() {
     if (contacts.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const LottieAnimationCall(),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ContactButton(
-                key: UniqueKey(),
-                buttonText: 'Add Contact',
-                onPressed: () async {
-                  // Перевірка дозволу на доступ до контактів
-                  PermissionStatus status = await Permission.contacts.status;
-                  if (status.isDenied) {
-                    print(status.isDenied);
-                    // Дозвіл на доступ до контактів не надано, показати повідомлення
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Access Denied'),
-                        content: const Text('Please grant permission to access contacts.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              // Відкрити налаштування дозволу
-                              openAppSettings();
-                            },
-                            child: const Text('Open Settings'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Cancel'),
-                          ),
-                        ],
-                      ),
-                    );
-                  } else if (status.isGranted) {
-                    //  додавання контакту
-                    _addContact();
-                  }
-                },
-              ),
-              const SizedBox(width: 16),
-              ContactButton(
-                key: UniqueKey(),
-                buttonText: 'Create Contact',
-                onPressed: () => _navigateToCreateContactScreen(context),
-              ),
-            ],
-          ),
         ],
       );
     } else {
@@ -84,22 +43,76 @@ class HomeScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final contact = contacts[index];
           return ListTile(
-            title: Text(contact),
-            // Додаткова інформація про контакт
+            title: Text('${contact.firstName} ${contact.lastName}'),
+            subtitle: Text(contact.phoneNumber),
+            leading: CircleAvatar(
+              backgroundImage: FileImage(File(contact.avatarPath)),
+            ),
           );
         },
       );
     }
   }
 
-  Future<void> _addContact() async {
-    // TODO: Додайте код для додавання контакту
+  Widget _buildFloatingActionButton() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FloatingActionButton(
+            onPressed: () async {
+              PermissionStatus status = await Permission.contacts.status;
+              if (status.isDenied) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Access Denied'),
+                    content: const Text(
+                        'Please grant permission to access contacts.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          openAppSettings();
+                        },
+                        child: const Text('Open Settings'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (status.isGranted) {
+                _navigateToCreateContactScreen(context);
+              }
+            },
+            child: const Icon(Icons.add),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FloatingActionButton(
+            onPressed: () => _navigateToCreateContactScreen(context),
+            child: const Icon(Icons.create),
+          ),
+        ),
+      ],
+    );
   }
 
-  void _navigateToCreateContactScreen(BuildContext context) {
-    Navigator.push(
+  void _navigateToCreateContactScreen(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateContactScreen()),
     );
+
+    setState(() {
+      contacts = ContactRepository.getContacts();
+    });
   }
 }
