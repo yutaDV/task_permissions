@@ -5,8 +5,6 @@ import '/screens/create_contact_screen.dart';
 import '/models/contact.dart';
 import 'dart:io';
 
-
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -16,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Contact> contacts = ContactRepository.getContacts();
+  List<Contact> selectedContacts = [];
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +42,26 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: contacts.length,
         itemBuilder: (context, index) {
           final contact = contacts[index];
+          final isSelected = selectedContacts.contains(contact);
           return ListTile(
             title: Text('${contact.firstName} ${contact.lastName}'),
             subtitle: Text(contact.phoneNumber),
-            leading: CircleAvatar(
-              backgroundImage: FileImage(File(contact.avatarPath)),
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: () => _onContactSelect(contact),
+                  icon: isSelected
+                      ? Icon(Icons.check_box)
+                      : Icon(Icons.check_box_outline_blank),
+                ),
+                CircleAvatar(
+                  backgroundImage: FileImage(File(contact.avatarPath)),
+                ),
+              ],
             ),
+            trailing: Icon(Icons.arrow_forward),
+            onTap: () => _onContactTap(contact),
           );
         },
       );
@@ -88,6 +101,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       contacts = ContactRepository.getContacts();
+    });
+  }
+
+  void _onContactTap(Contact contact) {
+    // Handle contact tap event
+  }
+
+  void _onContactSelect(Contact contact) {
+    setState(() {
+      if (selectedContacts.contains(contact)) {
+        selectedContacts.remove(contact);
+      } else {
+        selectedContacts.add(contact);
+      }
     });
   }
 }
