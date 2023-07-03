@@ -33,6 +33,7 @@ dependencies:
   lottie: ^2.4.0
   permission_handler: ^10.3.0
   image_picker: ^0.8.4+4
+  provider: ^6.0.5
   # The following adds the Cupertino Icons t to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2

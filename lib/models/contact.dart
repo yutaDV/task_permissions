@@ -14,7 +14,6 @@ class Contact {
   });
 }
 
-
 class ContactRepository {
   static List<Contact> _contacts = [];
 
@@ -26,4 +25,3 @@ class ContactRepository {
     return _contacts;
   }
 }
-

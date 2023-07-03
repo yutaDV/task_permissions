@@ -3,9 +3,9 @@ import '/services/lottie_animation_start.dart';
 import '/components/add_contact_button.dart';
 import '/screens/create_contact_screen.dart';
 import '/models/contact.dart';
-import 'dart:io';
-
-
+import '/components/contacts_list_widget.dart';
+import '/services/selected_contacts_provider.dart';
+import '/services/selected_contacts_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,16 +16,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Contact> contacts = ContactRepository.getContacts();
+  List<bool> selectedContacts = List.filled(ContactRepository.getContacts().length, false);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Contacts'),
-        centerTitle: true,
+    return SelectedContactsProvider(
+      selectedContacts: contacts,
+      toggleContact: _toggleContact,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('My Contacts'),
+          centerTitle: true,
+        ),
+        body: _buildBody(),
+        floatingActionButton: _buildFloatingActionButton(),
       ),
-      body: _buildBody(),
-      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
@@ -39,17 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       );
     } else {
-      return ListView.builder(
-        itemCount: contacts.length,
-        itemBuilder: (context, index) {
-          final contact = contacts[index];
-          return ListTile(
-            title: Text('${contact.firstName} ${contact.lastName}'),
-            subtitle: Text(contact.phoneNumber),
-            leading: CircleAvatar(
-              backgroundImage: FileImage(File(contact.avatarPath)),
-            ),
-          );
+      return ContactsListWidget(
+        contacts: contacts,
+        selectedContacts: selectedContacts,
+        onContactSelected: (int index, bool value) {
+          _onContactSelect(contacts[index]);
         },
       );
     }
@@ -64,6 +63,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: AddContactButton(
             onPressed: _onAddContactPressed,
           ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SelectedContactsButton(),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -88,6 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       contacts = ContactRepository.getContacts();
+      selectedContacts = List.filled(contacts.length, false);
     });
+  }
+
+  void _onContactSelect(Contact contact) {
+    setState(() {
+      // Toggle contact selection
+    });
+  }
+
+  void _toggleContact(Contact contact) {
+    final index = contacts.indexOf(contact);
+    if (index >= 0 && index < selectedContacts.length) {
+      setState(() {
+        selectedContacts[index] = !selectedContacts[index];
+      });
+    }
   }
 }
